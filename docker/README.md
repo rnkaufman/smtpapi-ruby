@@ -10,6 +10,3 @@ Running smtpapi-ruby in a Docker container for testing.
 ## Examples
 1. Run `docker-compose run mock-server`.
 2. In your container, run ``ruby examples/example.rb``
-
-
-#docker build -t smtpapi-ruby .
