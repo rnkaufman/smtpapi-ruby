@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 $LOAD_PATH.unshift File.dirname(__FILE__)
 require 'smtpapi/version'
 require 'json'
@@ -82,9 +81,7 @@ module Smtpapi
 
     def add_filter(filter_name, parameter_name, parameter_value)
       @filters[filter_name] = {} if @filters[filter_name].nil?
-      if @filters[filter_name]['settings'].nil?
-        @filters[filter_name]['settings'] = {}
-      end
+      @filters[filter_name]['settings'] = {} if @filters[filter_name]['settings'].nil?
       @filters[filter_name]['settings'][parameter_name] = parameter_value
       self
     end
@@ -114,27 +111,6 @@ module Smtpapi
       self
     end
 
-    def to_array
-      data = {}
-      data['to'] = @to if @to.length > 0
-      data['sub'] = @sub if @sub.length > 0
-      data['section'] = @section if @section.length > 0
-      data['unique_args'] = @unique_args if @unique_args.length > 0
-      data['category'] = @category if @category.length > 0
-      data['filters'] = @filters if @filters.length > 0
-      data['send_at'] = @send_at.to_i unless @send_at.nil?
-      data['asm_group_id'] = @asm_group_id.to_i unless @asm_group_id.nil?
-      data['ip_pool'] = @ip_pool unless @ip_pool.nil?
-      str_each_at = []
-      @send_each_at.each do |val|
-        str_each_at.push(val.to_i)
-      end
-      data['send_each_at'] = str_each_at if str_each_at.length > 0
-      data
-    end
-
-    protected :to_array
-
     def json_string
       escape_unicode(to_array.to_json)
     end
@@ -143,14 +119,38 @@ module Smtpapi
     def escape_unicode(str)
       str.unpack('U*').map do |i|
         if i > 65_535
-          "\\u#{format('%04x', ((i - 0x10000) / 0x400 + 0xD800))}"\
-          "\\u#{format('%04x', ((i - 0x10000) % 0x400 + 0xDC00))}" if i > 65_535
+          "\\u#{format('%04x', ((i - 0x10000) / 0x400 + 0xD800))}" \
+          "\\u#{format('%04x', ((i - 0x10000) % 0x400 + 0xDC00))}"
         elsif i > 127
           "\\u#{format('%04x', i)}"
         else
           i.chr('UTF-8')
         end
       end.join
+    end
+
+    protected
+
+    def to_array
+      data = {}
+      data['to'] = @to unless @to.empty?
+      data['sub'] = @sub unless @sub.empty?
+      data['section'] = @section unless @section.empty?
+      data['unique_args'] = @unique_args unless @unique_args.empty?
+      data['category'] = @category unless @category.empty?
+      data['filters'] = @filters unless @filters.empty?
+      data['send_at'] = @send_at.to_i unless @send_at.nil?
+      data['asm_group_id'] = @asm_group_id.to_i unless @asm_group_id.nil?
+      data['ip_pool'] = @ip_pool unless @ip_pool.nil?
+      str_each_at = []
+
+      @send_each_at.each do |val|
+        str_each_at.push(val.to_i)
+      end
+
+      data['send_each_at'] = str_each_at unless str_each_at.empty?
+
+      data
     end
   end
 end
